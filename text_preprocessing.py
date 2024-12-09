@@ -34,7 +34,8 @@ def clean_text(text):
     text = re.sub(r"\d+", "NUMBER", text)
     text = re.sub(r"[^a-zA-Z0-9\s!?\.,;]", "", text)
     text = re.sub(r"http\S+|www\S+|https\S+", "URL", text)
-    return text
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
 
 # Ön işleme
 def preprocess_text(text, custom_stopwords=None):
