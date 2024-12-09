@@ -5,7 +5,9 @@ from nltk.corpus import stopwords
 
 nltk.download('stopwords')
 nltk.download('wordnet')
-nlp = spacy.load("en_core_web_sm")
+
+spacy.require_gpu()
+nlp = spacy.load("en_core_web_md")
 
 # Stop words temizleme
 def remove_stopwords(text, custom_stopwords=None):
@@ -17,13 +19,21 @@ def remove_stopwords(text, custom_stopwords=None):
 # Lemmatization with POS tagging
 def lemmatize_text(text):
     doc = nlp(text)
-    return ' '.join([token.lemma_ if token.pos_ != 'PROPN' else token.text for token in doc])
+    lemmatized = []
+    for token in doc:
+        if token.pos_ not in ['PROPN', 'DET']:
+            lemmatized.append(token.lemma_ if token.lemma_ else token.text)
+        else:
+            lemmatized.append(token.text)
+    return ' '.join(lemmatized)
 
 # Metin Temizleme
 def clean_text(text):
     text = text.lower()
-    text = re.sub(r"[^a-zA-Z0-9\s]", "", text)  # Noktalama ve özel karakterleri kaldır
-    text = re.sub(r"\d+", "NUMBER", text)  # Sayıları 'NUMBER' ile değiştir
+    text = re.sub(r"@\S+", "USER", text)
+    text = re.sub(r"\d+", "NUMBER", text)
+    text = re.sub(r"[^a-zA-Z0-9\s!?\.,;]", "", text)
+    text = re.sub(r"http\S+|www\S+|https\S+", "URL", text)
     return text
 
 # Ön işleme

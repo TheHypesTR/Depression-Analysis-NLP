@@ -33,16 +33,16 @@ def test_model(user_test_texts):
 
 # Test için örnek metinler
 user_test_texts = [
-    "i hate everything i dont want live more",  # Depression
-    "i feel happy and excited for the day ahead",  # Normal
-    "life feels like a burden i can’t carry anymore",  # Depression
-    "i enjoyed a lovely walk in the park today",  # Normal
-    "i just want to disappear and never come back",  # Depression
-    "i’m looking forward to spending time with my friends",  # Normal
-    "nothing i do seems to matter; i feel so empty",  # Depression
-    "i’m grateful for the little things that make me smile",  # Normal
-    "even surrounded by people, i feel completely alone",  # Depression
-    "today was a productive and fulfilling day"  # Normal
+    "i hate everything i dont want live more",
+    "i feel happy and excited for the day ahead",
+    "life feels like a burden i can’t carry anymore",
+    "i enjoyed a lovely walk in the park today",
+    "i just want to disappear and never come back",
+    "i’m looking forward to spending time with my friends",
+    "nothing i do seems to matter; i feel so empty",
+    "i’m grateful for the little things that make me smile",
+    "even surrounded by people, i feel completely alone",
+    "today was a productive and fulfilling day"
 ]
 
 predictions_labels, predictions_probabilities = test_model(user_test_texts)
