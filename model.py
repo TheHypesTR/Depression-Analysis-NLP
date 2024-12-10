@@ -15,16 +15,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve
 from text_preprocessing import preprocess_text
 
-# 1. Veri Yükleme
+# Veri Yükleme
 data = pd.read_csv("mental_health.csv")
 data = data.dropna(subset=['label'])
 
-# 2. Veri İşleme
-# Metin ve etiketleri ayır
+# Veriyi Sütunlara Ayırma
 texts = data['text']
 labels = data['label']
 
-# Grafiği çiz
+# Veri Dağılım Grafiğini Çizdirme
 label_counts = data['label'].value_counts()
 label_counts.index = label_counts.index.map({0: 'Normal', 1: 'Depresyon'})
 plt.figure(figsize=(6, 4))
@@ -35,26 +34,28 @@ plt.ylabel('Sayı')
 plt.xticks(rotation=0)
 plt.show()
 
+# Metinleri Analiz Et ve Belirli bir Yapıya Getirme
 processed_texts = texts.apply(preprocess_text)
 
-# Tokenizer oluştur ve metinleri sayısal verilere çevir
+# Tokenizer Oluştur ve Metinleri Sayısal Verilere Çevir
 tokenizer = Tokenizer(num_words=30000, oov_token="<OOV>")
 tokenizer.fit_on_texts(processed_texts)
 sequences = tokenizer.texts_to_sequences(processed_texts)
 
+# Cümle Uzunluğunu ve Benzersiz Kelime Sayısını Bulma
 vocab_size = len(tokenizer.word_index)
 text_lengths = [len(seq) for seq in sequences]
 print(f"Veri Kümesindeki Benzersiz Kelimeler: {vocab_size}")
 
-# Her metnin uzunluğunu eşitle ve numpy array formatına çevir
+# Her Metnin Uzunluğunu Eşitle ve Mumpy Array Formatına Çevirme
 maxlen = int(np.percentile(text_lengths, 98))
 padded_sequences = pad_sequences(sequences, padding='post', maxlen=maxlen)
 labels = np.array(labels)
 
-# 3. Veri Bölme
+# Veriyi Veri Setlerine Bölme
 X_train, X_test, y_train, y_test = train_test_split(padded_sequences, labels, test_size=0.2, random_state=32, stratify=labels)
 
-# 4. Model Oluşturma
+# Model Oluşturma
 model = Sequential([
     Embedding(input_dim=30000, output_dim=256, input_length=maxlen),
     Bidirectional(LSTM(128, return_sequences=True)),
@@ -66,11 +67,11 @@ model = Sequential([
     Dense(1, activation='sigmoid')
 ])
 
-# Modeli derle ve özetini göster
+# Modeli Derleme ve Özetini Gösterme
 model.compile(optimizer=Adam(learning_rate=0.0001), loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
-# 5. Modeli Eğitme
+# Modeli Eğitme
 early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
 class_weights = compute_class_weight('balanced', classes=np.unique(labels), y=labels)
 class_weights_dict = dict(enumerate(class_weights))
@@ -85,7 +86,7 @@ history = model.fit(
     verbose=1
 )
 
-# 6. Modeli Değerlendirme
+# Modeli Değerlendirme
 test_loss, test_accuracy = model.evaluate(X_test, y_test)
 print(f"Test Loss: {test_loss}")
 print(f"Test Accuracy: {test_accuracy}")
@@ -94,7 +95,7 @@ print(f"Test Accuracy: {test_accuracy}")
 y_pred = (model.predict(X_test) > 0.5).astype("int32")
 print(classification_report(y_test, y_pred))
 
-# Tahmin ve Normalizasyonlu ve Normal confusion matrix
+# Tahmin ve Normalizasyonlu - Normal Confusion Matrix Çizdirme
 cm = confusion_matrix(y_test, y_pred)
 cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
@@ -113,7 +114,7 @@ plt.ylabel('Gerçek')
 plt.tight_layout()
 plt.show()
 
-# Eğitim ve doğrulama eğrilerinin farkını görselleştirme
+# Eğitim ve Doğrulama Eğrilerinin Değerlerini Çizdirme
 plt.figure(figsize=(12, 6))
 plt.subplot(1, 2, 1)
 plt.plot(history.history['loss'], label='Eğitim Kaybı')
@@ -129,7 +130,7 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-# ROC Eğrisini ve AUC Skorunu görselleştirme
+# ROC Eğrisini ve AUC Skorunu Çizdirme
 fpr, tpr, thresholds = roc_curve(y_test, y_pred)
 plt.plot(fpr, tpr, label=f'AUC = {roc_auc_score(y_test, y_pred):.2f}')
 plt.title('ROC Eğrisi')
@@ -138,7 +139,7 @@ plt.ylabel('Doğru Pozitif Oranı')
 plt.legend()
 plt.show()
 
-# 7. Modeli - Tokenizeri - Max Lenghti Kaydetme
+# Modeli - Tokenizeri - Max Lenghti Kaydetme
 model.save("depression_model.h5")
 with open("tokenizer.pkl", "wb") as f:
     pickle.dump(tokenizer, f)
